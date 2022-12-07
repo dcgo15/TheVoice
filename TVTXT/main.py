@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, Menu
+from tkinter import ttk, Menu, filedialog
 import os
 
 bg_=("#8a8888")
@@ -106,11 +106,9 @@ class Inicio(tk.Frame):
                          bg=bg_,fg="white", font="arial 12 bold")
         stop.place(x=740, y=610)
 
-        self.nome = tk.Label(self, text="arquivo.txt", bg=bg_, fg="white", font="arial 15 bold")
+        self.nome = tk.Label(self, text="Novo arquivo", bg=bg_, fg="white", font="arial 15 bold")
         self.nome.place(x=10,y=10)
 
-        dire = tk.Label(self, text="C:/Programs/TVTXT", bg=bg_, fg="white", font="arial 12 bold")
-        dire.pack()
 
         LOGO = tk.Label(self, text="TheVoice Text", bg=bg_, fg="white", font="arial 15 bold")
         LOGO.place(x=1200,y=10)
@@ -164,20 +162,66 @@ class MenuBar(tk.Menu):
             ini.txt["fg"] = "white"
 
         def new():
-            app.destroy()
-            os.popen("main.py")
+            ini = self.controller.get_page(Inicio)
+            ini.txt.delete("1.0", tk.END)
+            ini.nome["text"] = "Novo arquivo"
+
+        def abrir():
+            ini = self.controller.get_page(Inicio)
+            ini.txt.delete("1.0", tk.END)
+
+            file = filedialog.askopenfilename(initialdir="C:/Program Files/TVTXT", title="Escolha o arquivo",
+                                              filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
+            file.replace(file, "")
+            ini.nome["text"] = file
+
+            text = open(file, "r")
+            ler = text.read()
+
+            ini.txt.insert(tk.END, ler)
+            text.close()
+
+        def save():
+            ini = self.controller.get_page(Inicio)
+            
+            file = filedialog.asksaveasfilename(defaultextension=".*", initialdir="C:/Program Files/TVTXT",
+                                                title="Salvar o arquivo", filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
+
+            if file:
+                ini.nome["text"] = file
+
+                file = open(file, "w")
+                file.write(ini.txt.get(1.0, tk.END))
+                file.close()
+                
+
+        def dele():
+            pass
+            
 
         fileMenu = tk.Menu(self, tearoff=False)
         fileMenu2 = tk.Menu(self, tearoff=False)
         fileMenu3 = tk.Menu(self, tearoff=False)
+        fileMenu4 = tk.Menu(self, tearoff=False)
         
         self.add_cascade(label="File",underline=0, menu=fileMenu)
         fileMenu.add_command(label="Novo", underline=0,command=new)
-        fileMenu.add_command(label="Abrir", underline=0)
-        fileMenu.add_command(label="Salvar", underline=0)
-        fileMenu.add_command(label="Deletar", underline=0)
+        fileMenu.add_command(label="Abrir", underline=0, command=abrir)
+        fileMenu.add_command(label="Salvar", underline=0, command=save)
+
+        #add o outro save mais tarde
+        
+        fileMenu.add_command(label="Deletar", underline=0, command=dele)
+
+        fileMenu.add_separator()
 
         fileMenu.add_command(label="Exit", underline=1, command=onexit)
+
+        self.add_cascade(label="Edit",underline=0, menu=fileMenu4)
+
+        fileMenu4.add_command(label="Recortar")
+        fileMenu4.add_command(label="Copiar")
+        fileMenu4.add_command(label="Colar")
 
         self.add_cascade(label="Temas",underline=0, menu=fileMenu2)
         fileMenu2.add_command(label="Light", underline=0, command=light)
