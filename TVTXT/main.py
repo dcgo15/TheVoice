@@ -55,6 +55,7 @@ um tutorial para você.
 global select
 select = False
 
+
 class tvtxt(tk.Tk):
 
     def get_page(self, page_class):
@@ -213,13 +214,15 @@ class MenuBar(tk.Menu):
                 ini.txt.delete("sel.first", "sel.last")
 
         def copy():
-            pass
+            global select
+            ini = self.controller.get_page(Inicio)
+            if ini.txt.selection_get():
+                select=ini.txt.selection_get()
 
         def paste():
-            if select:
-                ini = self.controller.get_page(Inicio)
-                pos = ini.txt.index(INSERT)
-                ini.txt.insert(pos, select)
+            ini = self.controller.get_page(Inicio)
+            global select
+            ini.txt.insert(tk.END,select)
                 
 
         fileMenu = tk.Menu(self, tearoff=False)
