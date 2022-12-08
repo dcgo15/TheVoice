@@ -46,10 +46,14 @@ mais são que questões estéticas, o dark
 é para pessoas que gostam do tema
 mais escuro e o light mais claro
 
-E finalizando , não menos importante, temos
-o de ajuda que irá servir como um tutorial para
-você.
+E o de ajuda que irá servir como
+um tutorial para você.
+
+
 """
+
+global select
+select = False
 
 class tvtxt(tk.Tk):
 
@@ -181,7 +185,7 @@ class MenuBar(tk.Menu):
             ini.txt.insert(tk.END, ler)
             text.close()
 
-        def save():
+        def save_as():
             ini = self.controller.get_page(Inicio)
             
             file = filedialog.asksaveasfilename(defaultextension=".*", initialdir="C:/Program Files/TVTXT",
@@ -193,11 +197,30 @@ class MenuBar(tk.Menu):
                 file = open(file, "w")
                 file.write(ini.txt.get(1.0, tk.END))
                 file.close()
-                
 
-        def dele():
+
+        def save():
+            ini = self.controller.get_page(Inicio)
+            file = open(ini.nome["text"], "w")
+            file.write(ini.txt.get(1.0, tk.END))
+            file.close()
+
+        def recort():
+            global select
+            ini = self.controller.get_page(Inicio)
+            if ini.txt.get(1.0, tk.END):
+                select = ini.txt.get(1.0, tk.END)
+                ini.txt.delete("sel.first", "sel.last")
+
+        def copy():
             pass
-            
+
+        def paste():
+            if select:
+                ini = self.controller.get_page(Inicio)
+                pos = ini.txt.index(INSERT)
+                ini.txt.insert(pos, select)
+                
 
         fileMenu = tk.Menu(self, tearoff=False)
         fileMenu2 = tk.Menu(self, tearoff=False)
@@ -208,10 +231,10 @@ class MenuBar(tk.Menu):
         fileMenu.add_command(label="Novo", underline=0,command=new)
         fileMenu.add_command(label="Abrir", underline=0, command=abrir)
         fileMenu.add_command(label="Salvar", underline=0, command=save)
+        fileMenu.add_command(label="Salvar como", underline=0, command=save_as)
 
         #add o outro save mais tarde
         
-        fileMenu.add_command(label="Deletar", underline=0, command=dele)
 
         fileMenu.add_separator()
 
@@ -219,9 +242,9 @@ class MenuBar(tk.Menu):
 
         self.add_cascade(label="Edit",underline=0, menu=fileMenu4)
 
-        fileMenu4.add_command(label="Recortar")
-        fileMenu4.add_command(label="Copiar")
-        fileMenu4.add_command(label="Colar")
+        fileMenu4.add_command(label="Recortar", command=recort)
+        fileMenu4.add_command(label="Copiar", command=copy)
+        fileMenu4.add_command(label="Colar", command=paste)
 
         self.add_cascade(label="Temas",underline=0, menu=fileMenu2)
         fileMenu2.add_command(label="Light", underline=0, command=light)
