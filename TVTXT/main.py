@@ -1,9 +1,17 @@
 import tkinter as tk
 from tkinter import ttk, Menu, filedialog
+from PIL import Image, ImageTk
+import speech_recognition as sr
 import os
 
-bg_=("#8a8888")
+bg_=("#797978")
 
+############ANOTAÇÕES
+#TEMAS MELHORES
+#COMANDOS POR TECLAS
+#COMANDOS DE VOZES NO MENUBAR
+#TAB, 2 PONTOS , /
+#Funções em class
 
 HELP = """
 O programa TheVoiceText é um editor
@@ -29,6 +37,7 @@ parou
 No menu existem 3 grupos de botões:
 
 - File
+- Edits
 - Temas
 - Ajuda
 
@@ -40,6 +49,9 @@ arquivo:
 - Salvar: Você irá salvar o arquivo
 - Deletar: Você irá deletar o arquivo
 - Exit: Sair
+
+Em Edit terá opções como colar, copiar
+e recortar .
 
 Em temas existem duas opções, que nada
 mais são que questões estéticas, o dark
@@ -55,6 +67,33 @@ um tutorial para você.
 global select
 select = False
 
+####### Função ajuda
+
+def helpa():
+    app = tk.Tk()
+    app.title("Help - TVTXT")
+    app.geometry("300x400")
+    app.iconbitmap("logo.ico")
+    app.resizable(0,0)
+    def ok():
+        app.destroy()
+
+    tk.Label(app, text="Manual de Ajuda", font="arial 12").pack()
+
+    txt = tk.Text(app,
+                bg="white", fg="black", font="arial 10", width=45, height=15)
+    txt.place(x=0,y=45)
+
+    txt.insert(tk.END, HELP)
+         
+    scrollbar = ttk.Scrollbar(txt)
+    scrollbar.place(relheight=1, relx=0.890)
+
+    ttk.Button(app, text="Ok", width=16, command=ok).place(x=170, y=350)
+
+            
+    app.mainloop()
+
 
 class tvtxt(tk.Tk):
 
@@ -66,10 +105,14 @@ class tvtxt(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         container = tk.Frame(self)
 
+        
+
         menubar = MenuBar(self)
         self.config(menu=menubar)
 
         container.pack(side="top", fill="both", expand = True)
+
+        
 
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -96,65 +139,113 @@ class Inicio(tk.Frame):
 
     def __init__(self, parent, controller,bg=None):
         tk.Frame.__init__(self, parent, bg=bg)
+        global helpa
+        def gravar():
+            mic = sr.Recognizer()
 
-        self.txt = tk.Text(self, bg="white", fg="black", font="arial 12", width=151, height=30)
+            with sr.Microphone() as source:
+
+                mic.adjust_for_ambient_noise(source)
+
+                print("Diga alguma coisa:")
+
+                audio = mic.listen(source)
+
+            try:
+
+                frase = mic.recognize_google(audio, language="pt-BR").lower()
+
+                print("Você disse: ", frase)
+
+            except sr.UnkownValueError:
+                print("Não entendi")
+
+
+            ### Codigo usando a frase
+
+            #Funções menubar
+
+
+            if "digite" in frase:
+                fra = frase.replace("digite ", "")
+                dd = frase.replace("dois pontos", ":")
+
+                
+                self.txt.insert(tk.END, fra)
+
+
+            if "sair" in frase:
+                app.destroy()
+
+
+            if "ajuda" in frase:
+                helpa()
+
+            if "mude" in frase:
+                fra = frase.replace("mude para tema ", "")
+                if fra == "dark":
+                    self.txt["bg"] = "#121212"
+                elif fra=="branco":
+                    self.txt["bg"] = "white"
+
+                else:
+                    print("não entendi")
+
+            
+
+                
+        image2 = Image.open("bg3.png")
+        photo2 = ImageTk.PhotoImage(image2)
+        self.imagem2 = tk.Label(self,image=photo2, bg=bg_,width=10)
+        self.imagem2.image = photo2
+        self.imagem2.place(x=100,y=900)
+            
+
+        image = Image.open("bg-logo.png")
+        photo = ImageTk.PhotoImage(image)
+        self.imagem = tk.Label(self,image=photo, bg=bg_)
+        self.imagem.image = photo
+        self.imagem.place(x=1121,y=0)
+
+        self.txt = tk.Text(self, bg="white", fg="black", font="arial 12", width=151, height=25)
         self.txt.place(x=0,y=50)
+
+        
          
         scrollbar = ttk.Scrollbar(self.txt)
         scrollbar.place(relheight=1, relx=0.990)
 
-        grav = tk.Button(self, text="GRAVAR", width=60,height=3,
-                         bg=bg_,fg="white", font="arial 12 bold")
-        grav.place(x=10, y=610)
-
-        stop = tk.Button(self, text="× PARAR", width=60,height=3,
-                         bg=bg_,fg="white", font="arial 12 bold")
-        stop.place(x=740, y=610)
+        grav = tk.Button(self,image=photo2, width=200,height=200,
+                         bg=bg_,fg="white", font="arial 12 bold", command=gravar,borderwidth=0)
+        grav.place(x=560, y=506)
 
         self.nome = tk.Label(self, text="Novo arquivo", bg=bg_, fg="white", font="arial 15 bold")
         self.nome.place(x=10,y=10)
 
 
-        LOGO = tk.Label(self, text="TheVoice Text", bg=bg_, fg="white", font="arial 15 bold")
-        LOGO.place(x=1200,y=10)
+        
 
 class dois(tk.Frame):
 
     def __init__(self, parent, controller, bg=None):
         tk.Frame.__init__(self, parent)
 
+
+
+
+    
+
 class MenuBar(tk.Menu):
     def __init__(self, parent):
         tk.Menu.__init__(self, parent)
         self.controller = parent
 
+        global helpa
+
         def onexit():
             app.destroy()
 
-        def helpa():
-            app = tk.Tk()
-            app.title("Help- TVTXT")
-            app.geometry("300x400")
-            app.resizable(0,0)
-
-            def ok():
-                app.destroy()
-
-            tk.Label(app, text="Manual de Ajuda", font="arial 12").pack()
-
-            self.txt = tk.Text(app,
-                               bg="white", fg="black", font="arial 10", width=45, height=15)
-            self.txt.place(x=0,y=45)
-
-            self.txt.insert(tk.END, HELP)
-         
-            scrollbar = ttk.Scrollbar(self.txt)
-            scrollbar.place(relheight=1, relx=0.890)
-
-            ttk.Button(app, text="Ok", width=16, command=ok).place(x=170, y=350)
-
-            
-            app.mainloop()
+        
 
         def light():
             ini = self.controller.get_page(Inicio)
@@ -200,11 +291,6 @@ class MenuBar(tk.Menu):
                 file.close()
 
 
-        def save():
-            ini = self.controller.get_page(Inicio)
-            file = open(ini.nome["text"], "w")
-            file.write(ini.txt.get(1.0, tk.END))
-            file.close()
 
         def recort():
             global select
@@ -223,7 +309,14 @@ class MenuBar(tk.Menu):
             ini = self.controller.get_page(Inicio)
             global select
             ini.txt.insert(tk.END,select)
-                
+
+        def save():
+            ini = self.controller.get_page(Inicio)
+            file = open(ini.nome["text"], "w")
+            file.write(ini.txt.get(1.0, tk.END))
+            file.close()
+
+        
 
         fileMenu = tk.Menu(self, tearoff=False)
         fileMenu2 = tk.Menu(self, tearoff=False)
@@ -237,6 +330,8 @@ class MenuBar(tk.Menu):
         fileMenu.add_command(label="Salvar como", underline=0, command=save_as)
 
         #add o outro save mais tarde
+
+        
         
 
         fileMenu.add_separator()
@@ -256,10 +351,14 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="Ajuda",underline=0, menu=fileMenu3)
         fileMenu3.add_command(label="Tutorial", underline=0, command=helpa)
 
+
+
+
 if __name__ == "__main__":
     app = tvtxt()
     app.geometry("1400x1000")
-    app.title("TheVoiceText - v0.6.6")
+    app.title("TheVoiceText - v0.8.7")
+    app.iconbitmap("logo.ico")
     app.mainloop()
 
         
