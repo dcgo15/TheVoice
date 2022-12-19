@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, Menu, filedialog
 from PIL import Image, ImageTk
 import speech_recognition as sr
+import Funções.func
 import os
 
 bg_=("#797978")
@@ -12,6 +13,7 @@ bg_=("#797978")
 #COMANDOS DE VOZES NO MENUBAR
 #TAB, 2 PONTOS , /
 #Funções em class
+#Melhorar comandos de recort, past ...
 
 HELP = """
 O programa TheVoiceText é um editor
@@ -73,7 +75,7 @@ def helpa():
     app = tk.Tk()
     app.title("Help - TVTXT")
     app.geometry("300x400")
-    app.iconbitmap("logo.ico")
+    app.iconbitmap("Imagens/logo.ico")
     app.resizable(0,0)
     def ok():
         app.destroy()
@@ -174,34 +176,106 @@ class Inicio(tk.Frame):
                 self.txt.insert(tk.END, fra)
 
 
-            if "sair" in frase:
+            elif "sair" in frase:
                 app.destroy()
 
 
-            if "ajuda" in frase:
+            elif "ajuda" in frase:
                 helpa()
 
-            if "mude" in frase:
+            elif "mude" in frase:
                 fra = frase.replace("mude para tema ", "")
                 if fra == "dark":
                     self.txt["bg"] = "#121212"
+                    self.txt["fg"] = "white"
                 elif fra=="branco":
                     self.txt["bg"] = "white"
-
+                    self.txt["fg"] = "#121212"
                 else:
                     print("não entendi")
+
+
+            elif "novo" in frase:
+                self.txt.delete("1.0", tk.END)
+                self.nome["text"] = "Novo arquivo"
+
+
+            elif "abrir" in frase:
+                fra = frase.replace("abrir ", "")
+                fras = fra+".txt"
+
+                #SÓ ABRE NA MESMA PASTA
+                #CRIAR FUNÇÃO QUE ABRA EM OUTRAS PASTAS
+
+                self.txt.delete("1.0", tk.END)
+
+                
+                
+                self.nome["text"] = fras
+
+                text = open(fras, "r")
+                ler = text.read()
+
+                self.txt.insert(tk.END, ler)
+                text.close()
+
+
+            elif "salvar" in frase:
+                fras = self.nome["text"]
+
+                #AINDA VOU MUDAR PARA ACEITAR UMA OUTRA PASTA
+                arq = open(fras, "w")
+                arq.write(self.txt.get(1.0, tk.END))
+                arq.close()
+
+            elif "salvar como" in frase:
+                fra = frase.replace("salvar como ", "")
+                fras = fra+".txt"
+
+                arq = open(fras, "w")
+                arq.write(self.txt.get(1.0, tk.END))
+                arq.close()  
+
+            global select
+
+            if "recortar" in frase:
+               
+            
+                
+                if self.txt.get(1.0, tk.END):
+                    select = self.txt.get(1.0, tk.END)
+                    self.txt.delete("sel.first", "sel.last")
+
+
+            elif "copiar" in frase:
+                
+                
+                if self.txt.selection_get():
+                    select=self.txt.selection_get()
+
+
+            elif "colar" in frase:
+                
+                self.txt.insert(tk.END,select)
+                    
+            
+                
+            
+
+
+            
 
             
 
                 
-        image2 = Image.open("bg3.png")
+        image2 = Image.open("Imagens/bg3.png")
         photo2 = ImageTk.PhotoImage(image2)
         self.imagem2 = tk.Label(self,image=photo2, bg=bg_,width=10)
         self.imagem2.image = photo2
         self.imagem2.place(x=100,y=900)
             
 
-        image = Image.open("bg-logo.png")
+        image = Image.open("Imagens/bg-logo.png")
         photo = ImageTk.PhotoImage(image)
         self.imagem = tk.Label(self,image=photo, bg=bg_)
         self.imagem.image = photo
@@ -247,12 +321,13 @@ class MenuBar(tk.Menu):
 
         
 
-        def light():
+        def lighti():
+            
             ini = self.controller.get_page(Inicio)
             ini.txt["bg"] = "white"
-            ini.txt["fg"] = "black"
+            ini.txt["fg"] = "#121212"
 
-        def dark():
+        def darki():
             ini = self.controller.get_page(Inicio)
             ini.txt["bg"] = "#121212"
             ini.txt["fg"] = "white"
@@ -266,7 +341,7 @@ class MenuBar(tk.Menu):
             ini = self.controller.get_page(Inicio)
             ini.txt.delete("1.0", tk.END)
 
-            file = filedialog.askopenfilename(initialdir="C:/Program Files/TVTXT", title="Escolha o arquivo",
+            file = filedialog.askopenfilename(initialdir="Bibliotecas\Documentos", title="Escolha o arquivo",
                                               filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
             file.replace(file, "")
             ini.nome["text"] = file
@@ -345,8 +420,8 @@ class MenuBar(tk.Menu):
         fileMenu4.add_command(label="Colar", command=paste)
 
         self.add_cascade(label="Temas",underline=0, menu=fileMenu2)
-        fileMenu2.add_command(label="Light", underline=0, command=light)
-        fileMenu2.add_command(label="Dark", underline=0, command=dark)
+        fileMenu2.add_command(label="Light", underline=0, command=lighti)
+        fileMenu2.add_command(label="Dark", underline=0, command=darki)
         
         self.add_cascade(label="Ajuda",underline=0, menu=fileMenu3)
         fileMenu3.add_command(label="Tutorial", underline=0, command=helpa)
@@ -357,8 +432,8 @@ class MenuBar(tk.Menu):
 if __name__ == "__main__":
     app = tvtxt()
     app.geometry("1400x1000")
-    app.title("TheVoiceText - v0.8.7")
-    app.iconbitmap("logo.ico")
+    app.title("TheVoiceText - v1.1.7")
+    app.iconbitmap("Imagens/logo.ico")
     app.mainloop()
 
         
