@@ -2,18 +2,28 @@ import tkinter as tk
 from tkinter import ttk, Menu, filedialog
 from PIL import Image, ImageTk
 import speech_recognition as sr
-import Funções.func
 import os
 
-bg_=("#797978")
+
+arq = open("Config/mode.txt", "r")
+ler = arq.readline()
+
+k = ler.replace("tema: ", "")
+
+if k == "light":
+    bg_=("#797978")
+    bg2 = ("white")
+    fg=("#121212")
+else:
+    bg_=("#121212")
+    bg2 =("#121212")
+    fg=("white")
 
 ############ANOTAÇÕES
-#TEMAS MELHORES
 #COMANDOS POR TECLAS
-#COMANDOS DE VOZES NO MENUBAR
-#TAB, 2 PONTOS , /
-#Funções em class
-#Melhorar comandos de recort, past ...
+#TAB, 2 PONTOS , / PROGRAMAÇÃO
+#Melhorar comandos de recort, past ... to deficientes
+#Fontes
 
 HELP = """
 O programa TheVoiceText é um editor
@@ -162,13 +172,15 @@ class Inicio(tk.Frame):
             except sr.UnkownValueError:
                 print("Não entendi")
 
+            def replaceTodos(text, dic):
+                for i, j in dic.items():
+                    text = text.replace(i, j)
+                return text
 
-            ### Codigo usando a frase
-
-            #Funções menubar
+            pal = {"barra": "/", " ": "", "abrir": "", "salvar como": ""}
 
 
-            if "digite" in frase:
+            if "digite" in frase:   # OK
                 fra = frase.replace("digite ", "")
                 dd = frase.replace("dois pontos", ":")
 
@@ -176,36 +188,52 @@ class Inicio(tk.Frame):
                 self.txt.insert(tk.END, fra)
 
 
-            elif "sair" in frase:
+            elif "sair" in frase:   # OK
                 app.destroy()
 
 
-            elif "ajuda" in frase:
+            elif "ajuda" in frase:  #OK
                 helpa()
 
-            elif "mude" in frase:
+            elif "mude" in frase:   #OK
                 fra = frase.replace("mude para tema ", "")
-                if fra == "dark":
+                if fra == "escuro":
                     self.txt["bg"] = "#121212"
                     self.txt["fg"] = "white"
+                    arq = open("Config/mode.txt", "w")
+                    arq.write("tema: dark")
+                    arq.close()
+                    
+                    
                 elif fra=="branco":
                     self.txt["bg"] = "white"
                     self.txt["fg"] = "#121212"
+                    arq = open("Config/mode.txt", "w")
+                    arq.write("tema: light")
+                    arq.close()
                 else:
                     print("não entendi")
 
 
-            elif "novo" in frase:
+            elif "novo" in frase:   #OK
                 self.txt.delete("1.0", tk.END)
                 self.nome["text"] = "Novo arquivo"
 
 
+            ##CRIAR MENSAGENS DE ERROR
+
+
+            
             elif "abrir" in frase:
-                fra = frase.replace("abrir ", "")
+                fra = replaceTodos(frase, pal)
+                
+                
+                                    
+                
                 fras = fra+".txt"
 
-                #SÓ ABRE NA MESMA PASTA
-                #CRIAR FUNÇÃO QUE ABRA EM OUTRAS PASTAS
+                ###MENSAGEM QUE NÃO EXISTE
+
 
                 self.txt.delete("1.0", tk.END)
 
@@ -213,7 +241,14 @@ class Inicio(tk.Frame):
                 
                 self.nome["text"] = fras
 
+
+                
+
                 text = open(fras, "r")
+
+                
+
+
                 ler = text.read()
 
                 self.txt.insert(tk.END, ler)
@@ -222,14 +257,14 @@ class Inicio(tk.Frame):
 
             elif "salvar" in frase:
                 fras = self.nome["text"]
-
-                #AINDA VOU MUDAR PARA ACEITAR UMA OUTRA PASTA
+                    
                 arq = open(fras, "w")
                 arq.write(self.txt.get(1.0, tk.END))
                 arq.close()
 
             elif "salvar como" in frase:
-                fra = frase.replace("salvar como ", "")
+                
+                fra = replaceTodos(frase, pal) #caminho
                 fras = fra+".txt"
 
                 arq = open(fras, "w")
@@ -238,7 +273,7 @@ class Inicio(tk.Frame):
 
             global select
 
-            if "recortar" in frase:
+            if "recortar" in frase: #OK
                
             
                 
@@ -247,14 +282,14 @@ class Inicio(tk.Frame):
                     self.txt.delete("sel.first", "sel.last")
 
 
-            elif "copiar" in frase:
+            elif "copiar" in frase: #OK
                 
                 
                 if self.txt.selection_get():
                     select=self.txt.selection_get()
 
 
-            elif "colar" in frase:
+            elif "colar" in frase:  #OK
                 
                 self.txt.insert(tk.END,select)
                     
@@ -281,7 +316,7 @@ class Inicio(tk.Frame):
         self.imagem.image = photo
         self.imagem.place(x=1121,y=0)
 
-        self.txt = tk.Text(self, bg="white", fg="black", font="arial 12", width=151, height=25)
+        self.txt = tk.Text(self, bg=bg2, fg=fg, font="arial 12", width=151, height=25)
         self.txt.place(x=0,y=50)
 
         
@@ -322,15 +357,21 @@ class MenuBar(tk.Menu):
         
 
         def lighti():
-            
+            arq = open("Config/mode.txt", "w")
+            arq.write("tema: light")
+            arq.close()
             ini = self.controller.get_page(Inicio)
             ini.txt["bg"] = "white"
             ini.txt["fg"] = "#121212"
 
         def darki():
+            arq = open("Config/mode.txt", "w")
+            arq.write("tema: dark")
+            arq.close()
             ini = self.controller.get_page(Inicio)
             ini.txt["bg"] = "#121212"
             ini.txt["fg"] = "white"
+           
 
         def new():
             ini = self.controller.get_page(Inicio)
@@ -432,7 +473,7 @@ class MenuBar(tk.Menu):
 if __name__ == "__main__":
     app = tvtxt()
     app.geometry("1400x1000")
-    app.title("TheVoiceText - v1.1.7")
+    app.title("TheVoiceText - v1.1.95 Beta")
     app.iconbitmap("Imagens/logo.ico")
     app.mainloop()
 
