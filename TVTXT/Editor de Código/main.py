@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import ttk, Menu, filedialog
 from PIL import Image, ImageTk
 import speech_recognition as sr
+import subprocess
 import os
-
 
 arq = open("Config/mode.txt", "r")
 ler = arq.readline()
@@ -18,11 +18,6 @@ else:
     bg_=("#121212")
     bg2 =("#121212")
     fg=("white")
-
-############ANOTAÇÕES
-#COMANDOS POR TECLAS
-#TAB, 2 PONTOS , / PROGRAMAÇÃO
-#Melhorar comandos de recort, past ... to deficientes
 
 HELP = """
 O programa TheVoiceText é um editor
@@ -74,11 +69,6 @@ um tutorial para você.
 
 
 """
-
-global select
-select = False
-
-####### Função ajuda
 
 def helpa():
     app = tk.Tk()
@@ -146,164 +136,12 @@ class tvtxt(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
+
 class Inicio(tk.Frame):
 
     def __init__(self, parent, controller,bg=None):
         tk.Frame.__init__(self, parent, bg=bg)
-        global helpa
-        def gravar():
-            mic = sr.Recognizer()
 
-            with sr.Microphone() as source:
-
-                mic.adjust_for_ambient_noise(source)
-
-                print("Diga alguma coisa:")
-
-                audio = mic.listen(source)
-
-            try:
-
-                frase = mic.recognize_google(audio, language="pt-BR").lower()
-
-                print("Você disse: ", frase)
-
-            except sr.UnkownValueError:
-                print("Não entendi")
-
-            def replaceTodos(text, dic):
-                for i, j in dic.items():
-                    text = text.replace(i, j)
-                return text
-
-            pal = {"barra": "/", " ": "", "abrir": "", "salvar como": ""}
-
-
-            if "digite" in frase:   # OK
-                fra = frase.replace("digite ", "")
-                dd = frase.replace("dois pontos", ":")
-
-                
-                self.txt.insert(tk.END, fra)
-
-
-            elif "sair" in frase:   # OK
-                app.destroy()
-
-
-            elif "ajuda" in frase:  #OK
-                helpa()
-
-            elif "mude" in frase:   #OK
-                fra = frase.replace("mude para tema ", "")
-                if fra == "escuro":
-                    self.txt["bg"] = "#121212"
-                    self.txt["fg"] = "white"
-                    arq = open("Config/mode.txt", "w")
-                    arq.write("tema: dark")
-                    arq.close()
-                    
-                    
-                elif fra=="branco":
-                    self.txt["bg"] = "white"
-                    self.txt["fg"] = "#121212"
-                    arq = open("Config/mode.txt", "w")
-                    arq.write("tema: light")
-                    arq.close()
-                else:
-                    print("não entendi")
-
-
-            elif "novo" in frase:   #OK
-                self.txt.delete("1.0", tk.END)
-                self.nome["text"] = "Novo arquivo"
-
-
-            ##CRIAR MENSAGENS DE ERROR
-
-
-            
-            elif "abrir" in frase:
-                fra = replaceTodos(frase, pal)
-                
-                
-                                    
-                
-                fras = fra+".txt"
-
-                ###MENSAGEM QUE NÃO EXISTE
-
-
-                self.txt.delete("1.0", tk.END)
-
-                
-                
-                self.nome["text"] = fras
-
-
-                
-
-                text = open(fras, "r")
-
-                
-
-
-                ler = text.read()
-
-                self.txt.insert(tk.END, ler)
-                text.close()
-
-
-            elif "salvar" in frase:
-                fras = self.nome["text"]
-                    
-                arq = open(fras, "w")
-                arq.write(self.txt.get(1.0, tk.END))
-                arq.close()
-
-            elif "salvar como" in frase:
-                
-                fra = replaceTodos(frase, pal) #caminho
-                fras = fra+".txt"
-
-                arq = open(fras, "w")
-                arq.write(self.txt.get(1.0, tk.END))
-                arq.close()  
-
-            global select
-
-            if "recortar" in frase: #OK
-               
-            
-                
-                if self.txt.get(1.0, tk.END):
-                    select = self.txt.get(1.0, tk.END)
-                    self.txt.delete("sel.first", "sel.last")
-
-
-            elif "copiar" in frase: #OK
-                
-                
-                if self.txt.selection_get():
-                    select=self.txt.selection_get()
-
-
-            elif "colar" in frase:  #OK
-                
-                self.txt.insert(tk.END,select)
-                    
-            
-                
-            
-
-
-        def fonte():
-            font = value_inside.get()
-            tam = value_inside2.get()
-
-            self.txt["font"] = font, tam
-
-                
         image2 = Image.open("Imagens/bg3.png")
         photo2 = ImageTk.PhotoImage(image2)
         self.imagem2 = tk.Label(self,image=photo2, bg=bg_,width=10)
@@ -320,43 +158,22 @@ class Inicio(tk.Frame):
         self.txt = tk.Text(self, bg=bg2, fg=fg, font="arial 12", width=151, height=25)
         self.txt.place(x=0,y=50)
 
+        self.nome = tk.Label(self, text="Novo arquivo", bg=bg_, fg="white", font="arial 15 bold")
+        self.nome.place(x=10,y=10)
+
+        self.txt_out = tk.Text(self, bg=bg2, fg=fg, font="arial 12", width=63, height=13)
+        self.txt_out.place(x=800,y=505)
+
+        self.txt_out.insert(tk.END, ">>>")
         
          
         scrollbar = ttk.Scrollbar(self.txt)
         scrollbar.place(relheight=1, relx=0.990)
 
         grav = tk.Button(self,image=photo2, width=200,height=200,
-                         bg=bg_,fg="white", font="arial 12 bold", command=gravar,borderwidth=0)
+                         bg=bg_,fg="white", font="arial 12 bold",borderwidth=0)
         grav.place(x=560, y=506)
 
-        self.nome = tk.Label(self, text="Novo arquivo", bg=bg_, fg="white", font="arial 15 bold")
-        self.nome.place(x=10,y=10)
-
-        options_list = ["Calibri", "Arial", "Impact", "Bauhaus 93", "Algerian", "Broadway", "Cooper Black", "Arial Black"]
-  
-        value_inside = tk.StringVar()
-
-        value_inside.set("Fonte")
-            
-        question_menu = ttk.OptionMenu(self, value_inside, *options_list)
-        #question_menu.config(bg=bg_,fg="white")
-        question_menu.place(x=10,y=530)
-
-        options_list2 = ["8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72"]
-  
-        value_inside2 = tk.StringVar()
-
-        value_inside2.set("Tamanho")
-            
-        question_menu2 = ttk.OptionMenu(self, value_inside2, *options_list2)
-        #question_menu2.config(bg=bg_,fg="white")
-        question_menu2.place(x=150,y=530)
-
-        button = tk.Button(self, text="salvar configurações", width=25,command=fonte, borderwidth=0)
-        button.place(x=10,y=580)
-
-
-        
 
 class dois(tk.Frame):
 
@@ -407,7 +224,7 @@ class MenuBar(tk.Menu):
             ini.txt.delete("1.0", tk.END)
 
             file = filedialog.askopenfilename(initialdir="Bibliotecas\Documentos", title="Escolha o arquivo",
-                                              filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
+                                              filetypes=(("Arquivos de Python", "*.py"), ("Arquivos de texto", "*.txt")))
             file.replace(file, "")
             ini.nome["text"] = file
 
@@ -421,7 +238,7 @@ class MenuBar(tk.Menu):
             ini = self.controller.get_page(Inicio)
             
             file = filedialog.asksaveasfilename(defaultextension=".*", initialdir="C:/Program Files/TVTXT",
-                                                title="Salvar o arquivo", filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
+                                                title="Salvar o arquivo", filetypes=(("Arquivos de Python", "*.py"), ("Arquivos de texto", "*.txt")))
 
             if file:
                 ini.nome["text"] = file
@@ -456,6 +273,20 @@ class MenuBar(tk.Menu):
             file.write(ini.txt.get(1.0, tk.END))
             file.close()
 
+
+        def run():
+            ini = self.controller.get_page(Inicio)
+            path = ini.nome["text"]
+
+
+            command = f"python {path}"
+            process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE, shell=True)
+            saida, error = process.comunicate()
+            ini.txt_output.insert('1.0', saida)
+            ini.txt_output.insert('1.0', error)
+            
+
         
 
         fileMenu = tk.Menu(self, tearoff=False)
@@ -483,6 +314,7 @@ class MenuBar(tk.Menu):
         fileMenu4.add_command(label="Recortar", command=recort)
         fileMenu4.add_command(label="Copiar", command=copy)
         fileMenu4.add_command(label="Colar", command=paste)
+        fileMenu4.add_command(label="Rodar", command=run)
 
         self.add_cascade(label="Temas",underline=0, menu=fileMenu2)
         fileMenu2.add_command(label="Light", underline=0, command=lighti)
@@ -501,4 +333,4 @@ if __name__ == "__main__":
     app.iconbitmap("Imagens/logo.ico")
     app.mainloop()
 
-        
+
