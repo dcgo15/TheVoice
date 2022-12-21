@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import ttk, Menu, filedialog
 from PIL import Image, ImageTk
 import speech_recognition as sr
-import subprocess
+from subprocess import Popen, PIPE
+import sys
 import os
 
 arq = open("Config/mode.txt", "r")
@@ -278,13 +279,19 @@ class MenuBar(tk.Menu):
             ini = self.controller.get_page(Inicio)
             path = ini.nome["text"]
 
-
             command = f"python {path}"
-            process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, shell=True)
-            saida, error = process.comunicate()
-            ini.txt_output.insert('1.0', saida)
-            ini.txt_output.insert('1.0', error)
+
+            
+            #process =Popen(command, stdout=PIPE,
+            #                      stderr=PIPE,shell=True)
+
+
+            process = Popen(command, stdout=PIPE, stderr=PIPE,shell=False)
+
+            
+            saida, error = process.communicate()
+            ini.txt_out.insert(tk.END, saida)
+            ini.txt_out.insert(tk.END, error)
             
 
         
